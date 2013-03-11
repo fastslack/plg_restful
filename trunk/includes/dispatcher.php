@@ -46,11 +46,13 @@ class JRESTDispatcher
 		$resourcepath = $this->_rest->_uri->resource_path();
 
 		// Getting the table
-		JTable::addIncludePath(JPATH_PLUGINS .'/system/restful/includes/paths');
-		$table = RestfulTable::getInstance($resourcepath, 'RestfulTable');
+		JRestfulTable::addIncludePath(JPATH_PLUGINS .'/system/restful/includes/resources');
+		$table = JRestfulTable::getInstance($resourcepath, 'JRestfulTable');
+
+		$method = strtolower($this->_rest->_method).ucfirst($resourcepath);
 
 		// Getting the items
-		$items = $table->getItems($this->_rest->_uri);
+		$items = $table->$method($this->_rest->_uri);
 
 		return $items;
 	}

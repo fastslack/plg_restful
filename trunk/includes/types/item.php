@@ -8,20 +8,16 @@
 * @link http://www.matware.com.ar/
 * @license GNU General Public License version 2 or later; see LICENSE
 */
-defined('_JEXEC') or die;
+defined('JPATH_BASE') or die;
 
 /**
- * This object retrieved the lists of articles.
+ * This media type is one of a series of media types intended for use in web services provided by the Joomla Content Management System.
  *
- * @package     Matware.Restful
+ * @package     Joomla.Platform
+ * @subpackage  Restful
  * @since       12.3
  */
-class RestfulTableArticles extends RestfulTable
+class JRestfulTypesItem extends JRestfulTypesBase
 {
-	/**
-	* @param database A database connector object
-	*/
-	function __construct( &$db ) {
-		parent::__construct( '#__content', 'id', $db );
-	}
+
 }

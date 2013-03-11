@@ -22,28 +22,8 @@ defined('JPATH_BASE') or die();
  * @subpackage	Table
  * @since		12.3
  */
-class RestfulTable extends JTable
+class JRestfulTable extends JTable
 {
-	/**
-	 * Get the items
-	 *
-	 * @return  string/json	The json row
-	 *
-	 * @since   3.0
-	 */
-	public function getItems($uri)
-	{
-		// Load the items
-		$items = $this->loadItems($uri);
-
-		if ($items !== false) {
-			//return $this->toJSON();
-			return json_encode($items);
-		}else{
-			return false;
-		}
-	}
-
 	/**
 	 * Get the row
 	 *

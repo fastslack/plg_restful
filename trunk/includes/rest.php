@@ -17,25 +17,25 @@ defined( '_JEXEC' ) or die( 'Restricted access' );
  *
  * @package     Joomla
  * @subpackage  REST
- * @since       1.0
+ * @since       12.3
  */
 class JRESTMessage
 {
 	/**
 	 * @var    string  The HTTP request method for the message.
-	 * @since  1.0
+	 * @since  12.3
 	 */
 	public $_method;
 
 	/**
 	 * @var    array  Associative array of parameters for the REST message.
-	 * @since  1.0
+	 * @since  12.3
 	 */
 	public $_parameters = array();
 
 	/**
 	 * @var    array  List of OAuth possible parameters.
-	 * @since  1.0
+	 * @since  12.3
 	 */
 	private $_reserved = array(
 		'PHP_AUTH_USER',
@@ -58,9 +58,21 @@ class JRESTMessage
 
 	/**
 	 * @var    JURI  The request URI for the message.
-	 * @since  1.0
+	 * @since  12.3
 	 */
 	public $_uri;
+
+	/**
+	 * The joomla webservices media type. The list of available types
+   *
+	 *  - application/vnd.joomla.base.v1			Base media type specification from which other media types are derived.
+	 *  - application/vnd.joomla.service.v1		Root resource containing metadata about the API itself.
+	 *  - application/vnd.joomla.list.v1			Representation of an ordered collection of resources.
+	 *  - application/vnd.joomla.item.v1			Representation of a single resource.
+	 *
+	 * @since  12.3
+	 */
+	public $_type;
 
 	/**
 	 * Method to get the REST parameters for the current request. Parameters are retrieved from these locations
@@ -72,7 +84,7 @@ class JRESTMessage
 	 *
 	 * @return  boolean  True if an REST message was found in the request.
 	 *
-	 * @since   1.0
+	 * @since   12.3
 	 */
 	public function loadFromRequest()
 	{
@@ -103,8 +115,9 @@ class JRESTMessage
 		// If we found an REST message somewhere we need to set the URI and request method.
 		if ($found)
 		{
-			$this->_uri = new JUriRestful($this->_fetchRequestUrl());
+			$this->_uri = new JRestfulUri($this->_fetchRequestUrl());
 			$this->_method = strtoupper($_SERVER['REQUEST_METHOD']);
+			$this->_type = $_SERVER['CONTENT_TYPE'];
 		}
 
 		return $found;
@@ -118,7 +131,7 @@ class JRESTMessage
 	 *
 	 * @return  void
 	 *
-	 * @since   1.0
+	 * @since   12.3
 	 */
 	public function setParameters($parameters)
 	{
@@ -144,7 +157,7 @@ class JRESTMessage
 	 * @return  string encoded string
 	 *
 	 * @link    http://www.ietf.org/rfc/rfc3986.txt
-	 * @since   1.0
+	 * @since   12.3
 	 */
 	public function encode($s)
 	{
@@ -161,7 +174,7 @@ class JRESTMessage
 	 *
 	 * @link    http://www.ietf.org/rfc/rfc1738.txt
 	 * @link    http://www.ietf.org/rfc/rfc3986.txt
-	 * @since   1.0
+	 * @since   12.3
 	 */
 	public function decode($s)
 	{
@@ -258,7 +271,7 @@ class JRESTMessage
 	 *
 	 * @return  boolean  True if REST PHP_AUTH_USER header found.
 	 *
-	 * @since   1.0
+	 * @since   12.3
 	 */
 	private function _processAuthorizationHeader($header)
 	{
@@ -302,7 +315,7 @@ class JRESTMessage
 	 *
 	 * @return  boolean  True if REST parameters found.
 	 *
-	 * @since   1.0
+	 * @since   12.3
 	 */
 	private function _processGetVars()
 	{
@@ -334,7 +347,7 @@ class JRESTMessage
 	 *
 	 * @return  boolean  True if REST parameters found.
 	 *
-	 * @since   1.0
+	 * @since   12.3
 	 */
 	private function _processPostVars()
 	{

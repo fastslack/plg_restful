@@ -22,7 +22,7 @@ defined('JPATH_BASE') or die();
  * @subpackage  Uri
  * @since       12.3
  */
-class JUriRestful extends JUri
+class JRestfulUri extends JUri
 {
 	/**
 	 * Get the current path
