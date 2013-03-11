@@ -10,6 +10,7 @@ How to use
 - Modify the .htaccess and add this lines
 
 RewriteRule ^api/([^/]*)/([^/]*)$ index.php [L]
+
 RewriteRule ^api/([^/]*)/([^/]*)/([^/]*)$ index.php [L]
 
 - Configure the RestfulCli script and run it
