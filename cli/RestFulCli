@@ -79,29 +79,7 @@ class RestFulCli extends JApplicationCli
 		$path = 'articles';
 		$query = 'page=2&perPage=2';
 
-		echo $this->requestRest($path, false);
-		//$this->_test($path, $query);
-	}
-
-	public function _test($path, $query)
-	{
-		require_once JPATH_PLUGINS.'/system/restful/includes/uri.php';
-		require_once JPATH_PLUGINS.'/system/restful/includes/table.php';
-
-		$uri = @new JUriRestful();
-		$query = $query != false ? '?'.$query : '';
-		$uri->parse("http://moncada/restful/api/v1/{$path}{$query}");
-
-		// Getting the resource path
-		$resourcepath = $uri->resource_path();
-
-		// Getting the table
-		JTable::addIncludePath(JPATH_PLUGINS .'/system/restful/includes/paths');
-		$table = RestfulTable::getInstance($resourcepath, 'RestfulTable');
-
-		$items = $table->getItems($uri);
-
-		echo $items;
+		$this->requestRest($path, $query, 'list');
 	}
 
 	/**
@@ -113,7 +91,7 @@ class RestFulCli extends JApplicationCli
    * 
 	 * @return   ???
 	 */
-	public function requestRest($path = false, $query = false) {
+	public function requestRest($path = false, $query = false, $type = 'item', $format = 'json') {
 		// JHttp instance
 		jimport('joomla.http.http');
 		$http = new JHttp();
@@ -121,15 +99,32 @@ class RestFulCli extends JApplicationCli
 		$hostname = $this->params->get('rest_hostname');
 		$version = $this->params->get('version');
 
-		// Getting the restful data
-		$data = $this->getRestData();
+		// Getting the RESTful headers
+		$headers = $this->getRestHeaders();
 
 		// Requesting
 		$hostname = rtrim($hostname, '/');
 		$query = $query != false ? '?'.$query : '';
 		$uri = "{$hostname}/api/{$version}/{$path}{$query}";
 
-		$request = $http->get($uri, $data);
+		// Setting headers
+		switch ($type) {
+			case 'base':
+				$headers['Content-Type'] = "application/vnd.joomla.base.{$version}";
+		    break;
+			case 'service':
+		    $headers['Content-Type'] = "application/vnd.joomla.service.{$version}";
+		    break;
+			case 'item':
+		    $headers['Content-Type'] = "application/vnd.joomla.item.{$version}";
+		    break;
+			case 'list':
+		    $headers['Content-Type'] = "application/vnd.joomla.list.{$version}";
+		    break;
+		}
+
+		// Sending the request
+		$request = $http->get($uri, $headers);
 
 		$code = $request->code;
 
@@ -137,15 +132,14 @@ class RestFulCli extends JApplicationCli
 	}
 
 	/**
-	 * Get the raw data for this part of the upgrade.
+	 * Get the RESTful headers
 	 *
-	 * @return	array	Returns a reference to the source data array.
-	 * @since	0.4.4
-	 * @throws	Exception
+	 * @return	array	Returns the headers for the RESTful request
+	 * @since	 12.3
 	 */
-	public function getRestData()
+	public function getRestHeaders()
 	{
-		$data = array();
+		$headers = array();
 	
 		// Setting the headers for REST
 		$rest_username = $this->params->get('rest_username');
@@ -154,25 +148,25 @@ class RestFulCli extends JApplicationCli
 
 		// Setting the headers for REST
 		$str = $rest_username.":".$rest_password;
-		$data['Authorization'] = base64_encode($str);
+		$headers['Authorization'] = base64_encode($str);
 
 		// Encoding user
 		$user_encode = $rest_username.":".$rest_key;
-		$data['AUTH_USER'] = base64_encode($user_encode);
+		$headers['AUTH_USER'] = base64_encode($user_encode);
 		// Sending by other way, some servers not allow AUTH_ values
-		$data['USER'] = base64_encode($user_encode);
+		$headers['USER'] = base64_encode($user_encode);
 
 		// Encoding password
 		$pw_encode = $rest_password.":".$rest_key;
-		$data['AUTH_PW'] = base64_encode($pw_encode);
+		$headers['AUTH_PW'] = base64_encode($pw_encode);
 		// Sending by other way, some servers not allow AUTH_ values
-		$data['PW'] = base64_encode($pw_encode);
+		$headers['PW'] = base64_encode($pw_encode);
 
 		// Encoding key
 		$key_encode = $rest_key.":".$rest_key;
-		$data['KEY'] = base64_encode($key_encode);
+		$headers['KEY'] = base64_encode($key_encode);
 
-		return $data;
+		return $headers;
 	}
 } // end class
 
