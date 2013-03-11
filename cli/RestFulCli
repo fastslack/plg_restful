@@ -1,0 +1,191 @@
+#!/usr/bin/php
+<?php
+/**
+* @version $Id:
+* @package Matware.Restful
+* @copyright Copyright (C) 2005 - 2013 Matware. All rights reserved.
+* @author Matias Aguirre
+* @email maguirre@matware.com.ar
+* @link http://www.matware.com.ar/
+* @license GNU General Public License version 2 or later; see LICENSE
+*/
+// We are a valid Joomla entry point.
+define('_JEXEC', 1);
+
+// Bootstrap the application.
+require './bootstrap.php';
+
+class RestFulCli extends JApplicationCli
+{
+	/**
+	* Class constructor.
+	*
+	* @return void
+	*
+	* @since 2.5.0
+	*/
+	public function __construct()
+	{
+		// Call the parent __construct method so it bootstraps the application class.
+		parent::__construct();
+	
+		// Getting the parameters
+		$this->params = new JRegistry(new JConfig);
+
+		// Add the logger.
+		JLog::addLogger(
+			// Pass an array of configuration options
+			array(
+				// Set the name of the log file
+				'text_file' => JPATH_SITE.'/logs/restfulcli.log.php'
+			)
+		);
+
+		$this->red = "\033[0;31m";
+		$this->yellow = "\033[1;33m";
+		$this->white = "\033[1;37m";
+		$this->green = "\033[0;32m";
+		$this->cyan = "\033[0;36m";
+		$this->lightgray = "\033[0;34m";
+	}
+
+	/**
+	 * Help
+	 *
+	 * @return	none
+	 * @since	2.5.0
+	 */
+	public function help()
+	{
+		// Print help
+		$this->out();
+		$this->out(' RestFulCli v3.0.0');
+		$this->out(' Usage: RestFulCli [options] /resourcepath [fieldvaluelist] ');
+		$this->out(' For more details check README file');
+		$this->out();
+		$this->out(' Author: Matias Aguirre (maguirre@matware.com.ar)');
+		$this->out(' License: GNU/GPL http://www.gnu.org/licenses/gpl-2.0-standalone.html');
+		$this->out();
+	}
+
+	/**
+	 * execute
+	 *
+	 * @return	none
+	 * @since	2.5.0
+	 */
+	public function execute()
+	{
+		$path = 'articles';
+		$query = 'page=2&perPage=2';
+
+		echo $this->requestRest($path, false);
+		//$this->_test($path, $query);
+	}
+
+	public function _test($path, $query)
+	{
+		require_once JPATH_PLUGINS.'/system/restful/includes/uri.php';
+		require_once JPATH_PLUGINS.'/system/restful/includes/table.php';
+
+		$uri = @new JUriRestful();
+		$query = $query != false ? '?'.$query : '';
+		$uri->parse("http://moncada/restful/api/v1/{$path}{$query}");
+
+		// Getting the resource path
+		$resourcepath = $uri->resource_path();
+
+		// Getting the table
+		JTable::addIncludePath(JPATH_PLUGINS .'/system/restful/includes/paths');
+		$table = RestfulTable::getInstance($resourcepath, 'RestfulTable');
+
+		$items = $table->getItems($uri);
+
+		echo $items;
+	}
+
+	/**
+	 * Get a request
+	 *
+	 * URI = scheme "://" authority "/" path [ "?" query ] [ "#" fragment ]
+	 *
+   * http://www.domain.com/api/v1/articles?page=3&perPage=20
+   * 
+	 * @return   ???
+	 */
+	public function requestRest($path = false, $query = false) {
+		// JHttp instance
+		jimport('joomla.http.http');
+		$http = new JHttp();
+
+		$hostname = $this->params->get('rest_hostname');
+		$version = $this->params->get('version');
+
+		// Getting the restful data
+		$data = $this->getRestData();
+
+		// Requesting
+		$hostname = rtrim($hostname, '/');
+		$query = $query != false ? '?'.$query : '';
+		$uri = "{$hostname}/api/{$version}/{$path}{$query}";
+
+		$request = $http->get($uri, $data);
+
+		$code = $request->code;
+
+		return ($code == 200 || $code == 301) ? $request->body : 'ERROR CODE: '.$code;
+	}
+
+	/**
+	 * Get the raw data for this part of the upgrade.
+	 *
+	 * @return	array	Returns a reference to the source data array.
+	 * @since	0.4.4
+	 * @throws	Exception
+	 */
+	public function getRestData()
+	{
+		$data = array();
+	
+		// Setting the headers for REST
+		$rest_username = $this->params->get('rest_username');
+		$rest_password = $this->params->get('rest_password');
+		$rest_key = $this->params->get('rest_key');
+
+		// Setting the headers for REST
+		$str = $rest_username.":".$rest_password;
+		$data['Authorization'] = base64_encode($str);
+
+		// Encoding user
+		$user_encode = $rest_username.":".$rest_key;
+		$data['AUTH_USER'] = base64_encode($user_encode);
+		// Sending by other way, some servers not allow AUTH_ values
+		$data['USER'] = base64_encode($user_encode);
+
+		// Encoding password
+		$pw_encode = $rest_password.":".$rest_key;
+		$data['AUTH_PW'] = base64_encode($pw_encode);
+		// Sending by other way, some servers not allow AUTH_ values
+		$data['PW'] = base64_encode($pw_encode);
+
+		// Encoding key
+		$key_encode = $rest_key.":".$rest_key;
+		$data['KEY'] = base64_encode($key_encode);
+
+		return $data;
+	}
+} // end class
+
+// Wrap the execution in a try statement to catch any exceptions thrown anywhere in the script.
+try
+{
+	// Instantiate the application object, passing the class name to JCli::getInstance
+	// and use chaining to execute the application.
+	JApplicationCli::getInstance('RestFulCli')->execute();
+}
+catch (Exception $e)
+{
+	// An exception has been caught, just echo the message.
+	fwrite(STDOUT, $e->getMessage() . "\n");
+	exit($e->getCode());
+}

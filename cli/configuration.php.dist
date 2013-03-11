@@ -1,0 +1,54 @@
+<?php
+/**
+* @version $Id:
+* @package Matware.Restful
+* @copyright Copyright (C) 2005 - 2013 Matware. All rights reserved.
+* @author Matias Aguirre
+* @email maguirre@matware.com.ar
+* @link http://www.matware.com.ar/
+* @license GNU General Public License version 2 or later; see LICENSE
+*/
+
+// Prevent direct access to this file outside of a calling application.
+defined('_JEXEC') or die;
+
+/**
+* Restful configuration class.
+*
+* @package Matware.Restful
+* @since 12.3
+*/
+final class JConfig
+{
+	/**
+	* Restful Version
+	*
+	* @var string
+	* @since 12.3
+	*/
+	public $version = "v1";
+
+	/**
+	* The database configuration. Only for testing
+	*
+	* @var string
+	* @since 12.3
+	*/
+	public $dbtype = 'mysqli';
+	public $host = 'localhost';
+	public $user = '';
+	public $password = '';
+	public $db = '';
+	public $dbprefix = 'jos_';
+
+	/**
+	* The rest configuration.
+	*
+	* @var string
+	* @since 12.3
+	*/
+	public $rest_hostname = 'http://example.org/';
+	public $rest_username = 'admin';
+	public $rest_password = '';
+	public $rest_key = '';
+}
